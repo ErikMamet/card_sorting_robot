@@ -67,14 +67,16 @@ def pretrain(model):
 def train_model(model, num_epochs, train_loader, test_loader, device, save_location = "./log.txt"): 
     #TODO , make a better logger
     '''this function trains a model'''
+    save_name = utils.log_hyper_param("./log")
     model = model.to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr = 0.1)
     #schedueler = torch.optim.lr_scheduler.StepLR(optimizer,step_size = 15, gamma = 0.1)
     model.train()
+    f = open(save_location, 'a') 
     acc_history = []
     for epoch in range(num_epochs):
-        f = open(save_location, 'a') 
         j=0
+        acc = 0
         #training on one epoch
         for data, label in train_loader:
             data = data.type(torch.FloatTensor) 
@@ -91,15 +93,14 @@ def train_model(model, num_epochs, train_loader, test_loader, device, save_locat
             #schedueler.step()  #decays lr every n epochs
 
             #calc accuracy 
-            acc = 0
             for i in range(len(data)):
                 if torch.argmax(out[i]) == torch.argmax(label[i]):
                     acc += 1
-            acc = acc / len(data)
-            acc_history.append(acc)
+            acc += acc / len(data)
             print("len data = ", len(data) ," training accuracy on batch", j,  " : ", acc)
-            f.writelines(str(acc_history)+'\n')
             j+= 1
+        acc_history.append(acc)
+        f.writelines(str(acc_history)+'\n')
         
 
         #testing at the end of the epoch
