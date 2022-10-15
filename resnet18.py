@@ -216,9 +216,13 @@ class ResNet(nn.Module):
 def _resnet(arch, block, layers, pretrained, progress, **kwargs):
     model = ResNet(block, layers, **kwargs)
     if pretrained:
-        state_dict = load_state_dict_from_url('https://download.pytorch.org/models/resnet18-5c106cde.pth',
-                                              progress=progress)
-        model.load_state_dict(state_dict)
+        state_dict = torch.hub.load_state_dict_from_url('https://download.pytorch.org/models/resnet18-5c106cde.pth', progress=progress)
+        
+        state_dict.pop("fc.weight")
+        state_dict.pop("fc.bias")
+        
+        model.load_state_dict(state_dict, strict = False)
+        
     return model
 
 

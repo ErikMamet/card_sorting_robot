@@ -8,6 +8,8 @@ import os.path as osp
 import matplotlib.pyplot as plt
 import cv2 
 import time
+import torch
+import os
 
 #######
 ## extracting cards from dataset (same functions will be used to extract cards from images in real time)
@@ -33,7 +35,7 @@ def isolate_resize_card(img_path,contours, new_size):
     cnt=contours[max_index]
     x,y,w,h = cv2.boundingRect(cnt)
     res = image[y:y+h,x:x+w]
-    res_resized = cv2.resize(res, new_size )
+    res_resized = cv2.resize(res, new_size)
     return res_resized
 
 def labels_from_text(str):
@@ -104,7 +106,10 @@ def labels_from_text(str):
         if str[1] == "C":
             return (i-1)
     
-
+def save_network(network, epoch_label):
+    save_filename = 'net_%s.pth' % epoch_label
+    save_path = os.path.join('./savedModels', save_filename)
+    torch.save(network.state_dict(), save_path)
 
 def display(img_path, contours):
     image = cv2.imread(img_path)
@@ -128,11 +133,10 @@ if __name__ == "__main__":
     f = open("./annotation.json")
     
     json_dictionary = json.load(f)
-    test_img = json_dictionary["images"][400]["file_name"]
+    test_img = json_dictionary["images"][1808]["file_name"]
     img_directory = "./dataset/Images/Images"
     test_img_path = osp.join(img_directory,test_img)
-    contours = find_contours(test_img_path)
-    print(contours)
+    contours = find_contours(test_img_path,170)
     display(test_img_path, contours)
 
     f.close()

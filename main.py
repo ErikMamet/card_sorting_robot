@@ -18,7 +18,7 @@ TESTING_FREQ = 5
 ### split test and train
 ########
 
-batch_size = 32
+batch_size = 124
 validation_split_index = .2
 seed= 42
 np.random.seed(seed)
@@ -38,8 +38,8 @@ train_indices, val_indices = indices[split_index:], indices[:split_index]
 train_sampler = db.SubsetRandomSampler(train_indices)
 valid_sampler = db.SubsetRandomSampler(val_indices)
 
-train_loader = db.DataLoader(C, batch_size=batch_size, sampler=train_sampler)
-validation_loader = db.DataLoader(C, batch_size=batch_size, sampler=valid_sampler)
+train_loader = db.DataLoader(C, batch_size=batch_size, sampler=train_sampler, num_workers=1, pin_memory=False)
+validation_loader = db.DataLoader(C, batch_size=batch_size, sampler=valid_sampler, num_workers=1, pin_memory=False)
 
 
 # TEST and TRAIN functions
@@ -48,9 +48,8 @@ def test(model, data_loader, device ):
     '''this tests one given model, passed as a model and not a path'''
     acc = 0
     for data, label in data_loader:
-        print(data)
         data = data.to(device)
-        model = model.eval(data)
+        model = model.eval()
         out = model(data)
         acc = 0
         for i in range(len(data)):
@@ -99,14 +98,23 @@ def train_model(model, num_epochs, train_loader, test_loader, device, save_locat
                     acc += 1
             acc = acc / len(data)
             acc_history.append(acc)
-            print("training accuracy on batch", j,  " : ", acc)
+            print("len data = ", len(data) ," training accuracy on batch", j,  " : ", acc)
             f.writelines(str(acc_history)+'\n')
             j+= 1
+        
+
         #testing at the end of the epoch
         if epoch%TESTING_FREQ == 0 :
             test_acc = test(model, test_loader, device=device)
             print("testing accuracy : ", test_acc)
             f.writelines(str(acc_history)+'\n')
+        
+        def save_network(network, save_path= "model_epoch_"+str(epoch)):
+            torch.save(network.state_dict(), save_path)
+        
+        save_network(model)
+
+        
 
 
         
@@ -114,7 +122,7 @@ def train_model(model, num_epochs, train_loader, test_loader, device, save_locat
 
 def main():   
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = networks.resnet18(pretrained=False)
+    model = networks.resnet18(pretrained=True)
 
 
     if TRAIN == True:
