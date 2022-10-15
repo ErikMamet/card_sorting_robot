@@ -36,6 +36,8 @@ def isolate_resize_card(img_path,contours, new_size):
     x,y,w,h = cv2.boundingRect(cnt)
     res = image[y:y+h,x:x+w]
     res_resized = cv2.resize(res, new_size)
+    res_resized = np.swapaxes(res_resized,1,2)
+    res_resized = np.swapaxes(res_resized,0,1)
     return res_resized
 
 def labels_from_text(str):
@@ -105,7 +107,13 @@ def labels_from_text(str):
             return (i-1)-1
         if str[1] == "C":
             return (i-1)
-    
+
+def int_to_mat_label(lab):
+    lab = labels_from_text(lab) 
+    label = np.zeros(53) 
+    label[lab-1] = 1  
+    return label
+
 def save_network(network, epoch_label):
     save_filename = 'net_%s.pth' % epoch_label
     save_path = os.path.join('./savedModels', save_filename)

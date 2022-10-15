@@ -48,6 +48,7 @@ def test(model, data_loader, device ):
     '''this tests one given model, passed as a model and not a path'''
     acc = 0
     for data, label in data_loader:
+        data = data.type(torch.FloatTensor) 
         data = data.to(device)
         model = model.eval()
         out = model(data)
@@ -76,9 +77,7 @@ def train_model(model, num_epochs, train_loader, test_loader, device, save_locat
         j=0
         #training on one epoch
         for data, label in train_loader:
-            data = np.swapaxes(data,2,3)
-            data = np.swapaxes(data,1,2)
-            data = data.type(torch.FloatTensor) #initially a torch.ByteTensor so we have to cast.
+            data = data.type(torch.FloatTensor) 
             print("data shape :::::::::::::::: ", data.size())
             data = data.to(device)
             label = label.to(device)
